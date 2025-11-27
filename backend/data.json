@@ -1,0 +1,112 @@
+{
+  "readings": [
+    {
+      "moisture": 11,
+      "temperature": 12,
+      "humidity": 11,
+      "createdAt": "2025-11-27T16:38:37.285Z"
+    },
+    {
+      "moisture": 12,
+      "temperature": 23,
+      "humidity": 11,
+      "createdAt": "2025-11-27T16:43:04.594Z"
+    },
+    {
+      "moisture": 12,
+      "temperature": 23,
+      "humidity": 14,
+      "createdAt": "2025-11-27T16:43:29.845Z"
+    },
+    {
+      "moisture": 17,
+      "temperature": 23,
+      "humidity": 14,
+      "createdAt": "2025-11-27T16:43:39.436Z"
+    },
+    {
+      "moisture": 17,
+      "temperature": 23,
+      "humidity": 14,
+      "createdAt": "2025-11-27T16:43:41.275Z"
+    },
+    {
+      "moisture": 22,
+      "temperature": 42,
+      "humidity": 32,
+      "createdAt": "2025-11-27T16:48:28.827Z"
+    },
+    {
+      "moisture": 11,
+      "temperature": 45,
+      "humidity": 36,
+      "createdAt": "2025-11-27T16:49:11.799Z"
+    },
+    {
+      "moisture": 22,
+      "temperature": 21,
+      "humidity": 34,
+      "createdAt": "2025-11-27T16:50:09.153Z"
+    },
+    {
+      "moisture": 70,
+      "temperature": 34,
+      "humidity": 23,
+      "createdAt": "2025-11-27T16:59:50.224Z"
+    },
+    {
+      "moisture": 80,
+      "temperature": 34,
+      "humidity": 23,
+      "createdAt": "2025-11-27T17:00:10.441Z"
+    },
+    {
+      "moisture": 100,
+      "temperature": 34,
+      "humidity": 23,
+      "createdAt": "2025-11-27T17:00:16.698Z"
+    },
+    {
+      "moisture": 1,
+      "temperature": 34,
+      "humidity": 23,
+      "createdAt": "2025-11-27T17:00:21.179Z"
+    },
+    {
+      "moisture": 180,
+      "temperature": 34,
+      "humidity": 23,
+      "createdAt": "2025-11-27T17:00:27.851Z"
+    },
+    {
+      "moisture": 80,
+      "temperature": 34,
+      "humidity": 23,
+      "createdAt": "2025-11-27T17:00:37.146Z"
+    },
+    {
+      "moisture": 81,
+      "temperature": 34,
+      "humidity": 23,
+      "createdAt": "2025-11-27T17:00:44.874Z"
+    },
+    {
+      "moisture": 11,
+      "temperature": 23,
+      "humidity": 32,
+      "createdAt": "2025-11-27T17:14:17.683Z"
+    },
+    {
+      "moisture": 12,
+      "temperature": 45,
+      "humidity": 41,
+      "createdAt": "2025-11-27T17:14:54.787Z"
+    },
+    {
+      "moisture": 11,
+      "temperature": 43,
+      "humidity": 32,
+      "createdAt": "2025-11-27T17:26:39.469Z"
+    }
+  ]
+}

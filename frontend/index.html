@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Smart Farm Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Chart.js for Graphs -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+  <h1>🌱 Smart Farm Dashboard</h1>
+
+  <!-- ========== Latest Sensor Reading ========== -->
+  <section id="latest-section">
+    <h2>Latest Sensor Reading</h2>
+    <div class="card">
+      <p>Moisture: <span id="moisture">--</span>%</p>
+      <p>Temperature: <span id="temperature">--</span> °C</p>
+      <p>Humidity: <span id="humidity">--</span>%</p>
+      <p>Time: <span id="timestamp">--</span></p>
+    </div>
+    <button id="refreshLatest">Refresh Latest</button>
+  </section>
+
+
+  <!-- ========== Simple Irrigation Recommendation (Moisture-based) ========== -->
+  <section id="recommendation-section">
+    <h2>Irrigation Recommendation</h2>
+    <div class="card">
+      <p>Action: <span id="action">--</span></p>
+      <p>Message: <span id="message">--</span></p>
+    </div>
+    <button id="getRecommendation">Get Recommendation</button>
+  </section>
+
+
+  <!-- ========== AI Smart Recommendation (Weather + Soil) ========== -->
+  <section id="smart-recommendation-section">
+    <h2>Smart AI Irrigation (Weather + Soil)</h2>
+    <div class="card">
+      <p>AI Decision: <span id="smartAction">--</span></p>
+      <p>Weather Note: <span id="weatherNote">--</span></p>
+      <p>Reasoning:</p>
+      <ul id="smartReasons"></ul>
+    </div>
+    <button id="getSmartRecommendation">Get Smart Recommendation</button>
+  </section>
+
+
+  <!-- ========== History Graph + Pump Events ========== -->
+  <section id="history-section">
+    <h2>Sensor History & Pump Events</h2>
+    <div class="card">
+      <canvas id="historyChart" height="120"></canvas>
+    </div>
+  </section>
+
+
+  <!-- ========== Manual Sensor Simulator (Testing UI) ========== -->
+  <section id="simulate-section">
+    <h2>Simulate Sensor Reading (for testing)</h2>
+    <form id="simulateForm">
+      <label>
+        Moisture (%):
+        <input type="number" id="simMoisture" required />
+      </label>
+
+      <label>
+        Temperature (°C):
+        <input type="number" id="simTemp" required />
+      </label>
+
+      <label>
+        Humidity (%):
+        <input type="number" id="simHumidity" required />
+      </label>
+
+      <button type="submit">Send Reading</button>
+    </form>
+
+    <p id="simulateResult"></p>
+  </section>
+
+
+  <!-- Main Script -->
+  <script src="main.js"></script>
+
+</body>
+</html>
