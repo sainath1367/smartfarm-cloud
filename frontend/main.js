@@ -9,7 +9,7 @@
    ✔ Auto refresh on reading submit
 ===========================================================*/
 
-const API_BASE = "http://localhost:5000";  // ← Change later for Azure
+const API_BASE = "https://smartfarm-api-j8qc.onrender.com";
 
 //================ DOM ELEMENTS ===============
 const moistureSpan = document.getElementById("moisture");
@@ -27,6 +27,10 @@ const weatherNoteSpan = document.getElementById("weatherNote");
 const smartReasonsList = document.getElementById("smartReasons");
 const smartRecBtn = document.getElementById("getSmartRecommendation");
 
+// Buttons
+const refreshBtn = document.getElementById("refreshLatest");
+const recBtn = document.getElementById("getRecommendation");
+
 // History chart canvas
 let farmChart;
 const chartCanvas = document.getElementById("historyChart");
@@ -37,7 +41,6 @@ const simMoisture = document.getElementById("simMoisture");
 const simTemp = document.getElementById("simTemp");
 const simHumidity = document.getElementById("simHumidity");
 const simResult = document.getElementById("simulateResult");
-
 
 // ====================================================================
 // 1) LOAD LATEST SENSOR DATA
@@ -65,7 +68,6 @@ async function loadLatest() {
   }
 }
 
-
 // ====================================================================
 // 2) BASIC MOISTURE IRRIGATION RECOMMENDATION
 // ====================================================================
@@ -76,7 +78,7 @@ async function loadRecommendation() {
 
     if (!res.ok) {
       actionSpan.textContent = "--";
-      messageSpan.textContent = data.error;
+      messageSpan.textContent = data.error || "No data";
       return;
     }
 
@@ -88,7 +90,6 @@ async function loadRecommendation() {
   }
 }
 
-
 // ====================================================================
 // 3) SMART AI (WEATHER + SOIL) RECOMMENDATION
 // ====================================================================
@@ -99,7 +100,7 @@ async function loadSmartRecommendation() {
 
     if (!res.ok) {
       smartActionSpan.textContent = "--";
-      weatherNoteSpan.textContent = "No weather / no data found";
+      weatherNoteSpan.textContent = data.error || "No weather / no data found";
       smartReasonsList.innerHTML = "";
       return;
     }
@@ -109,7 +110,7 @@ async function loadSmartRecommendation() {
       `${data.weather.description} | Rain: ${data.weather.chanceOfRain}% | Temp: ${data.weather.forecastTemp}°C`;
 
     smartReasonsList.innerHTML = "";
-    data.explanation.forEach(r => {
+    (data.explanation || []).forEach((r) => {
       const li = document.createElement("li");
       li.textContent = r;
       smartReasonsList.appendChild(li);
@@ -121,96 +122,158 @@ async function loadSmartRecommendation() {
   }
 }
 
-
 // ====================================================================
 // 4) HISTORY GRAPH (Moisture + Temp + Humidity + Pump Markers)
 // ====================================================================
 async function loadHistoryAndChart() {
-
-  const res = await fetch(`${API_BASE}/api/history`);
-  const data = await res.json();
-  if (!Array.isArray(data) || data.length === 0) return;
-
-  const labels = data.map(r =>
-    new Date(r.createdAt).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})
-  );
-
-  const moisture = data.map(r => r.moisture);
-  const temp = data.map(r => r.temperature);
-  const humidity = data.map(r => r.humidity);
-
-  // Pump Markers
-  const onPoints = [];
-  const offPoints = [];
-
-  data.forEach((r, i) => {
-    let action;
-    if (r.moisture < 40) action = "PUMP_ON";
-    else if (r.moisture > 80) action = "PUMP_OFF";
-
-    if (action === "PUMP_ON") onPoints.push({ x: labels[i], y: r.moisture });
-    if (action === "PUMP_OFF") offPoints.push({ x: labels[i], y: r.moisture });
-  });
-
-  if (farmChart) farmChart.destroy();
-
-  farmChart = new Chart(chartCanvas, {
-    type: "line",
-    data: {
-      labels,
-      datasets: [
-        { label: "Moisture %", data: moisture, borderWidth: 2, tension: 0.3 },
-        { label: "Temperature °C", data: temp, borderWidth: 2, borderDash: [5,5], tension: 0.3, yAxisID: "y1" },
-        { label: "Humidity %", data: humidity, borderWidth: 2, borderDash: [2,3], tension: 0.3 },
-        { label: "Pump ON",  type:"scatter", data:onPoints, pointStyle:"triangle", pointRadius:6 },
-        { label: "Pump OFF", type:"scatter", data:offPoints, pointStyle:"rectRot", pointRadius:6 }
-      ]
-    },
-    options: {
-      responsive:true,
-      scales:{
-        y:{ title:{display:true,text:"Moisture / Humidity"} },
-        y1:{ position:"right", title:{display:true,text:"Temperature °C"}, grid:{drawOnChartArea:false}}
+  try {
+    const res = await fetch(`${API_BASE}/api/history`);
+    const data = await res.json();
+    if (!Array.isArray(data) || data.length === 0) {
+      if (farmChart) {
+        farmChart.destroy();
+        farmChart = null;
       }
+      return;
     }
-  });
-}
 
+    const labels = data.map((r) =>
+      new Date(r.createdAt).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    );
+
+    const moisture = data.map((r) => r.moisture);
+    const temp = data.map((r) => r.temperature);
+    const humidity = data.map((r) => r.humidity);
+
+    // Pump Markers
+    const onPoints = [];
+    const offPoints = [];
+
+    data.forEach((r, i) => {
+      let action;
+      if (r.moisture < 40) action = "PUMP_ON";
+      else if (r.moisture > 80) action = "PUMP_OFF";
+
+      if (action === "PUMP_ON") onPoints.push({ x: labels[i], y: r.moisture });
+      if (action === "PUMP_OFF") offPoints.push({ x: labels[i], y: r.moisture });
+    });
+
+    if (farmChart) farmChart.destroy();
+
+    farmChart = new Chart(chartCanvas, {
+      type: "line",
+      data: {
+        labels,
+        datasets: [
+          {
+            label: "Moisture %",
+            data: moisture,
+            borderWidth: 2,
+            tension: 0.3,
+          },
+          {
+            label: "Temperature °C",
+            data: temp,
+            borderWidth: 2,
+            borderDash: [5, 5],
+            tension: 0.3,
+            yAxisID: "y1",
+          },
+          {
+            label: "Humidity %",
+            data: humidity,
+            borderWidth: 2,
+            borderDash: [2, 3],
+            tension: 0.3,
+          },
+          {
+            label: "Pump ON",
+            type: "scatter",
+            data: onPoints,
+            pointStyle: "triangle",
+            pointRadius: 6,
+          },
+          {
+            label: "Pump OFF",
+            type: "scatter",
+            data: offPoints,
+            pointStyle: "rectRot",
+            pointRadius: 6,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            title: { display: true, text: "Moisture / Humidity" },
+          },
+          y1: {
+            position: "right",
+            title: { display: true, text: "Temperature °C" },
+            grid: { drawOnChartArea: false },
+          },
+        },
+      },
+    });
+  } catch (err) {
+    console.error("Error loading history/chart:", err);
+  }
+}
 
 // ====================================================================
 // 5) SUBMIT SENSOR (SIMULATION)
 // ====================================================================
-simForm.addEventListener("submit", async e => {
+simForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   simResult.textContent = "Sending...";
 
   const payload = {
     moisture: simMoisture.value,
     temperature: simTemp.value,
-    humidity: simHumidity.value
+    humidity: simHumidity.value,
   };
 
-  const res = await fetch(`${API_BASE}/api/sensor`,{
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body:JSON.stringify(payload)
-  });
+  try {
+    const res = await fetch(`${API_BASE}/api/sensor`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
 
-  const data=await res.json();
-  simResult.textContent="✔ Saved Successfully";
+    const data = await res.json();
 
+    if (!res.ok) {
+      simResult.textContent = "❌ Error: " + (data.error || "Failed");
+    } else {
+      simResult.textContent = "✔ Saved Successfully";
+      loadLatest();
+      loadRecommendation();
+      loadSmartRecommendation();
+      loadHistoryAndChart();
+    }
+  } catch (err) {
+    console.error(err);
+    simResult.textContent = "Connection Error";
+  }
+});
+
+// ====================================================================
+// 6) BUTTON EVENTS + AUTO LOAD
+// ====================================================================
+refreshBtn.addEventListener("click", () => {
   loadLatest();
-  loadRecommendation();
-  loadSmartRecommendation();
   loadHistoryAndChart();
 });
 
+recBtn.addEventListener("click", loadRecommendation);
+smartRecBtn.addEventListener("click", loadSmartRecommendation);
 
-// ====================================================================
-// 6) AUTO LOAD ON PAGE OPEN
-// ====================================================================
+// Auto-load on page open
 loadLatest();
 loadRecommendation();
 loadSmartRecommendation();
 loadHistoryAndChart();
-

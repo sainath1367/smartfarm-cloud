@@ -1,41 +1,48 @@
 // backend/database.js
+'use strict';
+
 const fs = require('fs');
 const path = require('path');
 
 const DATA_FILE = path.join(__dirname, 'data.json');
 
-function initFile() {
-  if (!fs.existsSync(DATA_FILE)) {
-    fs.writeFileSync(DATA_FILE, JSON.stringify({ readings: [] }, null, 2));
+function loadFromFile() {
+  try {
+    if (!fs.existsSync(DATA_FILE)) {
+      return [];
+    }
+    const text = fs.readFileSync(DATA_FILE, 'utf8');
+    if (!text.trim()) return [];
+    return JSON.parse(text);
+  } catch (err) {
+    console.error('❌ Error reading data.json:', err);
+    return [];
   }
 }
 
-function readFile() {
-  initFile();
-  const raw = fs.readFileSync(DATA_FILE, 'utf-8');
-  return JSON.parse(raw);
+function saveToFile(readings) {
+  try {
+    fs.writeFileSync(DATA_FILE, JSON.stringify(readings, null, 2));
+  } catch (err) {
+    console.error('❌ Error writing data.json:', err);
+  }
 }
 
-function writeFile(data) {
-  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
-}
+// In-memory cache
+let readings = loadFromFile();
 
 function saveReading(reading) {
-  const data = readFile();
-  data.readings.push(reading);
-  writeFile(data);
+  readings.push(reading);
+  saveToFile(readings);
   return reading;
 }
 
 function getAllReadings() {
-  const data = readFile();
-  return data.readings || [];
+  return readings;
 }
 
 function getLatestReading() {
-  const all = getAllReadings();
-  if (all.length === 0) return null;
-  return all[all.length - 1];
+  return readings.length ? readings[readings.length - 1] : null;
 }
 
 module.exports = {

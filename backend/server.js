@@ -4,10 +4,6 @@
 const express = require('express');
 const cors = require('cors');
 
-// for optional weather API (node-fetch in CommonJS)
-const fetch = (...args) =>
-  import('node-fetch').then(({ default: fetch }) => fetch(...args));
-
 const {
   saveReading,
   getAllReadings,
@@ -15,18 +11,18 @@ const {
 } = require('./database');
 
 const app = express();
-const PORT = process.env.PORT || 5000; // good for Azure & local
+const PORT = process.env.PORT || 5000; // required for Render
 
 // ---------- Middleware ----------
 app.use(cors());
 app.use(express.json());
 
-// ---------- Root route (quick health check) ----------
+// ---------- Root route ----------
 app.get('/', (req, res) => {
   res.send('SmartFarm backend is running ✅');
 });
 
-// ---------- Helper: basic irrigation logic (moisture only) ----------
+// ---------- Helper: basic irrigation logic ----------
 function getIrrigationRecommendation(reading) {
   if (!reading) {
     return {
@@ -126,8 +122,8 @@ app.get('/api/recommendation', (req, res) => {
   }
 });
 
-// ========== 5) Advanced Smart Recommendation (Weather + Moisture) ==========
-app.get('/api/smart-recommendation', async (req, res) => {
+// ========== 5) Smart Recommendation (Weather + Moisture, simulated) ==========
+app.get('/api/smart-recommendation', (req, res) => {
   try {
     const latest = getLatestReading();
     if (!latest) {
@@ -137,32 +133,14 @@ app.get('/api/smart-recommendation', async (req, res) => {
     const moisture = Number(latest.moisture);
     const temperature = Number(latest.temperature);
 
-    // ===== Weather data (SIMULATED for now) =====
-    // You can replace this with real API later.
-    let weather = {
+    // Simulated weather data (no external API; safer on Render)
+    const weather = {
       description: 'clear sky',
-      chanceOfRain: 10, // %
-      forecastTemp: temperature, // same as sensor
+      chanceOfRain: 20,            // %
+      forecastTemp: temperature+2, // pretend tomorrow is a bit hotter
     };
 
-    /* 
-    // Example (optional) real API call with OpenWeather (if you want later):
-    const apiKey = 'YOUR_OPENWEATHER_API_KEY';
-    const city = 'Delhi,IN';
-    const resp = await fetch(
-      `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`
-    );
-    const w = await resp.json();
-    weather = {
-      description: w.weather[0].description,
-      chanceOfRain: (w.rain && w.rain['1h']) ? 80 : 10,
-      forecastTemp: w.main.temp,
-    };
-    */
-
-    // ===== AI-style decision combining moisture + weather =====
-    let action;
-    let reason = [];
+    const reason = [];
 
     // Moisture analysis
     if (moisture < 40) {
@@ -179,10 +157,11 @@ app.get('/api/smart-recommendation', async (req, res) => {
     } else if (weather.forecastTemp >= 35) {
       reason.push(`High temperature forecast (${weather.forecastTemp}°C).`);
     } else {
-      reason.push(`Weather normal (no extreme heat or heavy rain).`);
+      reason.push('Weather normal (no extreme heat or heavy rain).');
     }
 
-    // Final decision rules
+    // Final AI-style decision rules
+    let action;
     if (moisture < 40 && weather.chanceOfRain < 40) {
       action = 'PUMP_ON';
     } else if (moisture < 40 && weather.chanceOfRain >= 40) {
@@ -213,5 +192,5 @@ app.get('/api/smart-recommendation', async (req, res) => {
 
 // ---------- Start server ----------
 app.listen(PORT, () => {
-  console.log(`🚀 SmartFarm backend running on http://localhost:${PORT}`);
+  console.log(`🚀 SmartFarm backend running on port ${PORT}`);
 });
